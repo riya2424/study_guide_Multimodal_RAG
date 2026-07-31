@@ -1,0 +1,24 @@
+Django==5.1.4
+python-dotenv==1.0.1
+
+# LangChain core + integrations (current v1.x generation, not the
+# deprecated 0.3.x "classic agent" line -- see GUIDE.md for why this
+# matters)
+langchain==1.3.14
+langchain-community==0.4.2
+langchain-google-genai==4.3.2
+langchain-text-splitters==1.1.2
+langchain-chroma==1.1.0
+
+# Vector store backend
+chromadb==1.5.9
+
+# Document ingestion
+pypdf==5.1.0
+Pillow==11.0.0
+
+# Free web-search tool used for "core topics across the web" expansion
+duckduckgo-search==6.3.7
+
+# Utilities
+Markdown==3.7

@@ -1,0 +1,40 @@
+{% extends "core/base.html" %}
+{% load markdown_extras %}
+{% block title %}{{ document.original_name }} — Study Desk{% endblock %}
+{% block content %}
+<section class="hero">
+    <span class="hero-eyebrow">{{ document.content_type|upper }} &middot; {{ document.status }}</span>
+    <h1>{{ document.original_name }}</h1>
+</section>
+
+{% if document.status == "failed" %}
+<div class="paper">
+    <h2>Processing failed</h2>
+    <p>{{ document.error_message }}</p>
+</div>
+{% elif document.status == "ready" %}
+<div class="paper">
+    {% if topics %}
+    <div class="summary-meta">
+        {% for topic in topics %}
+        <span class="topic-chip">{{ topic }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="summary-body">
+        {{ document.summary|markdown }}
+    </div>
+
+    <div class="action-row">
+        <a href="{% url 'chat' document.id %}" class="btn btn-primary">Ask follow-up questions</a>
+        <a href="{% url 'quiz' document.id %}" class="btn btn-secondary">Take a self-assessment quiz</a>
+    </div>
+</div>
+{% else %}
+<div class="paper">
+    <h2>Still processing&hellip;</h2>
+    <p>Refresh this page in a moment.</p>
+</div>
+{% endif %}
+{% endblock %}

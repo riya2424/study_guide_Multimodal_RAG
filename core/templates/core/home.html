@@ -1,0 +1,33 @@
+{% extends "core/base.html" %}
+{% block title %}Study Desk — Library{% endblock %}
+{% block content %}
+<section class="hero">
+    <span class="hero-eyebrow">Personal Learning Agent</span>
+    <h1>Turn any PDF or image into a <span class="highlight">study session</span>.</h1>
+    <p>Upload a document, get a structured summary and core topics, then ask
+    follow-up questions or take a self-assessment quiz — all powered by a
+    LangChain agent running on Gemini Flash.</p>
+    <div class="action-row">
+        <a href="{% url 'upload' %}" class="btn btn-primary">+ Upload content</a>
+    </div>
+</section>
+
+{% if documents %}
+<div class="doc-grid">
+    {% for doc in documents %}
+    <a class="doc-card" href="{% url 'document_detail' doc.id %}">
+        <div>
+            <div class="doc-title">{{ doc.original_name }}</div>
+            <div class="doc-meta">{{ doc.content_type|upper }} &middot; {{ doc.created_at|date:"M d, Y H:i" }}</div>
+        </div>
+        <span class="badge {{ doc.status }}">{{ doc.status }}</span>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="paper empty-state">
+    <h2>No documents yet</h2>
+    <p>Upload your first PDF or image to get started.</p>
+</div>
+{% endif %}
+{% endblock %}

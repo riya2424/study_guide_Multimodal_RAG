@@ -1,0 +1,44 @@
+{% extends "core/base.html" %}
+{% block title %}Upload — Study Desk{% endblock %}
+{% block content %}
+<section class="hero">
+    <span class="hero-eyebrow">Step 1</span>
+    <h1>Upload a <span class="highlight">PDF or image</span></h1>
+    <p>Pick the content type, choose your file, and the agent will extract
+    the text, build a searchable knowledge base, and write you a structured
+    summary. This runs synchronously, so larger PDFs may take a little
+    longer the first time.</p>
+</section>
+
+<div class="paper">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="field">
+            <label>Content type</label>
+            <div class="radio-row">
+                {% for value, label in form.content_type.field.choices %}
+                <label class="radio-option">
+                    <input type="radio" name="content_type" value="{{ value }}"
+                        {% if forloop.first %}checked{% endif %}>
+                    {{ label }}
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="field">
+            <label for="{{ form.file.id_for_label }}">File</label>
+            {{ form.file }}
+        </div>
+        {% if form.errors %}
+            <ul class="flash-list">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <li class="flash flash-error">{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <button type="submit" class="btn btn-primary">Ingest &amp; summarize</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends "core/base.html" %}
+{% load markdown_extras %}
+
+{% block title %}Chat - {{ document.original_name }}{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <span class="hero-eyebrow">Ask &amp; explore</span>
+    <h1>Chat about <span class="highlight">{{ document.original_name }}</span></h1>
+    <p>The agent remembers everything you've asked in this session, searches
+    the document for grounded answers, and can search the web when you want
+    to explore a topic further.</p>
+</section>
+
+<div class="chat-shell">
+    <div class="chat-header">
+        <strong>{{ session.title }}</strong>
+        <a href="{% url 'document_detail' document.id %}" class="btn btn-ghost">&larr; Back to summary</a>
+    </div>
+    
+    <div class="chat-log" id="chat-log">
+        {% for msg in history %}
+            <!-- Applied the markdown filter to historical messages -->
+            <div class="bubble bubble-{{ msg.role }}">{{ msg.content|markdown }}</div>
+        {% empty %}
+            <div class="bubble bubble-ai">Ask me anything about this document - or say "quiz me" style questions to explore further, and I'll pull in the web when useful.</div>
+        {% endfor %}
+    </div>
+    
+    <form class="chat-input-row" id="chat-form">
+        <input type="text" id="chat-input" placeholder="Ask a question about this document..." autocomplete="off" required>
+        <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+</div>
+
+<!-- 1. Import Markdown and MathJax renderers -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<!-- 2. Updated chat logic -->
+<script>
+    const chatLog = document.getElementById("chat-log");
+    const chatForm = document.getElementById("chat-form");
+    const chatInput = document.getElementById("chat-input");
+    const chatApiUrl = "{% url 'chat_api' document.id session.id %}";
+
+    // Helper to render Markdown and trigger MathJax on new bubbles
+    function updateBubble(div, text) {
+        div.innerHTML = marked.parse(text);
+        
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            MathJax.typesetPromise([div]).catch((err) => console.log('MathJax error:', err));
+        }
+    }
+
+    function addBubble(role, text, pending) {
+        const div = document.createElement("div");
+        div.className = "bubble bubble-" + role + (pending ? " pending" : "");
+        
+        if (pending) {
+            div.textContent = text;
+        } else {
+            updateBubble(div, text);
+        }
+        
+        chatLog.appendChild(div);
+        chatLog.scrollTop = chatLog.scrollHeight;
+        return div;
+    }
+
+    chatForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const question = chatInput.value.trim();
+        if (!question) return;
+        
+        addBubble("human", question);
+        chatInput.value = "";
+        const pendingBubble = addBubble("ai", "Thinking...", true);
+
+        try {
+            const response = await fetch(chatApiUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ question: question }),
+            });
+            const data = await response.json();
+            
+            pendingBubble.classList.remove("pending");
+            
+            // Pass the raw text through our Markdown & MathJax renderer
+            updateBubble(pendingBubble, data.answer || data.error || "Something went wrong.");
+            chatLog.scrollTop = chatLog.scrollHeight; // Auto-scroll to bottom of new message
+            
+        } catch (err) {
+            pendingBubble.classList.remove("pending");
+            pendingBubble.textContent = "Network error: " + err;
+        }
+    });
+</script>
+{% endblock %}

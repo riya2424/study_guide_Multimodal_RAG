@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.env
+db.sqlite3
+media/uploads/*
+!media/uploads/.gitkeep
+chroma_store/*
+!chroma_store/.gitkeep
+venv/
+.venv/
+*.egg-info/
+.DS_Store
