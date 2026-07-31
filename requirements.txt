@@ -19,6 +19,7 @@ Pillow==11.0.0
 
 # Free web-search tool used for "core topics across the web" expansion
 duckduckgo-search==6.3.7
+ddgs
 
 # Utilities
 Markdown==3.7
